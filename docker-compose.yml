@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  mailer:
+    image: schickling/mailcatcher
+    ports: ['1025','1080']
+  cache:
+    image: redis:7.0.0
+    restart: always
+    ports:
+      - '6378:6378'
+  nginx:
+    build: ./docker/nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: always
+    volumes:
+      - ./docker/.data/nginx/log/:/var/log/nginx
+      - ./docker/nginx/conf:/etc/nginx/conf.d/:ro
+      - ./:/var/www/paymentcalculator
+    depends_on:
+      - php
+  php:
+    build:
+      context: ./
+      dockerfile: docker/php-fpm/Dockerfile
+    volumes:
+      - ./:/var/www/paymentcalculator
